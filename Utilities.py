@@ -1,5 +1,6 @@
 import cv2
 from matplotlib import pyplot as plt
+import numpy as np
 
 
 def showHistogram(img):
@@ -74,3 +75,22 @@ def ensure_three_channel_grayscale_image(gray_scale_img):
         return cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     else:
         raise ValueError("Ungültiges Bildformat.")
+
+def create_identity_lut():
+    # Erzeugt ein Array mit float Werten von 0 bis 255
+    return np.arange(256, dtype=np.float32)
+
+def visualize_lut(lut):
+    """
+    Erstellt ein 256x256 Bild, das die LUT als rote Kurve darstellt.
+    lut: Ein Array oder eine Liste mit 256 Integern (0-255).
+    """
+    vis_lut = lut.astype(np.uint8)
+    vis_img = np.full((256, 256, 3), 255, dtype=np.uint8)
+
+    for x in range(256):
+        y = vis_lut[x]
+        y_plot = 255 - y
+        vis_img[y_plot, x] = [255, 0, 0]
+
+    return vis_img

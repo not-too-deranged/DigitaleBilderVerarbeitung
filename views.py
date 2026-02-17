@@ -4,6 +4,8 @@ from PyQt6.QtCore import Qt, QThread, QTimer, QRegularExpression
 from PyQt6.QtWidgets import QMainWindow, QWidget, QPushButton, QVBoxLayout, QApplication, QSlider
 from PyQt6.QtGui import QPixmap, QColor, QRegularExpressionValidator
 import logging
+
+import Utilities
 from loggers import LogEmitter
 import models
 
@@ -82,6 +84,18 @@ class MainView(QMainWindow):
         self._ui.pushButton_hist_exp.clicked.connect(self.on_apply_exp_on_hist_button_clicked)
         self._ui.pushButton_hist_inv.clicked.connect(self.on_apply_inverse_on_hist_button_clicked)
         self._ui.horizontalSlider_hist_threshold.sliderReleased.connect(self.on_apply_threshold_on_hist_button_clicked)
+        self._ui.horizontalSlider_contrast_sigmoid.sliderReleased.connect(self.on_apply_sigmoid_contrast_on_hist_button_clicked)
+        self._ui.horizontalSlider_contrast.sliderReleased.connect(self.on_apply_contrast_on_hist_button_clicked)
+        self._ui.horizontalSlider_exposure.sliderReleased.connect(self.on_apply_exposure_on_hist_button_clicked)
+
+        self._ui.horizontalSlider_hist_threshold.valueChanged.connect(self.on_apply_threshold_on_hist_button_clicked)
+        self._ui.horizontalSlider_hist_threshold.valueChanged.connect(self.update_threshold_label)
+        self._ui.horizontalSlider_exposure.valueChanged.connect(self.on_apply_exposure_on_hist_button_clicked)
+        self._ui.horizontalSlider_exposure.valueChanged.connect(self.update_exposure_label)
+        self._ui.horizontalSlider_contrast.valueChanged.connect(self.on_apply_contrast_on_hist_button_clicked)
+        self._ui.horizontalSlider_contrast.valueChanged.connect(self.update_contrast_label)
+        self._ui.horizontalSlider_contrast_sigmoid.valueChanged.connect(self.update_contrast_sigmoid_label)
+        self._ui.horizontalSlider_contrast_sigmoid.valueChanged.connect(self.on_apply_sigmoid_contrast_on_hist_button_clicked)
 
         self._ui.pushButton_filter_sobelX.clicked.connect(self.on_filter_sobelX_button_clicked)
         self._ui.pushButton_filter_sobelY.clicked.connect(self.on_filter_sobelY_button_clicked)
@@ -138,6 +152,7 @@ class MainView(QMainWindow):
         self.update_image()
         self.update_histogram()
         self.update_image_information()
+        self.update_lut()
 
 
     def on_input_image_changed(self):
@@ -212,8 +227,12 @@ class MainView(QMainWindow):
         #qt_img = convert_cv_qt(frame, size.width(), size.height())
         self._ui.label_input_image.setPixmap(qt_img)
 
+
     def update_histogram(self):
         self._ui.widget_histogram.drawHistogram(self._model.image)
+
+    def update_lut(self):
+        self._ui.lut_visualization.setPixmap(convert_cv_qt(Utilities.visualize_lut(self._model.lut), 256, 256))
 
     def update_image_information(self):
         image_size = self._main_controller.get_image_information()
@@ -228,6 +247,20 @@ class MainView(QMainWindow):
         self._ui.label_color_pixel2.setText(str(pixel_colors[1]))
 
 
+    def update_threshold_label(self):
+        value = self._ui.horizontalSlider_hist_threshold.value()
+        self._ui.label_threshold.setText(f"{value}")
+    def update_exposure_label(self):
+        value = self._ui.horizontalSlider_exposure.value()/10
+        self._ui.label_exposure.setText(f"{value}")
+
+    def update_contrast_label(self):
+        value = self._ui.horizontalSlider_contrast.value()
+        self._ui.label_contrast.setText(f"{value}")
+
+    def update_contrast_sigmoid_label(self):
+        value = self._ui.horizontalSlider_contrast_sigmoid.value()/100
+        self._ui.label_contrast_sigmoid.setText(f"{value}")
     #####################
     # Übung 1
     #####################
@@ -268,6 +301,18 @@ class MainView(QMainWindow):
         self._main_controller.apply_threshold(self._ui.horizontalSlider_hist_threshold.sliderPosition())
         self.on_image_changed()
 
+    def on_apply_sigmoid_contrast_on_hist_button_clicked(self):
+        self._main_controller.apply_contrast_sigmoid(self._ui.horizontalSlider_contrast_sigmoid.sliderPosition()/100)
+        self.on_image_changed()
+
+    def on_apply_contrast_on_hist_button_clicked(self):
+        self._main_controller.apply_contrast(self._ui.horizontalSlider_contrast.sliderPosition()/100)
+        self.on_image_changed()
+
+
+    def on_apply_exposure_on_hist_button_clicked(self):
+        self._main_controller.apply_exposure(self._ui.horizontalSlider_exposure.sliderPosition()/10)
+        self.on_image_changed()
     #####################
     # Übung 3
     #####################

@@ -2,41 +2,34 @@ import cv2
 import numpy as np
 import Utilities
 
+import matplotlib.pyplot as plt
+import matplotlib as mpl
+mpl.use('TkAgg')
+
+#Anzahl möglicher Grauwerte
+L = 256
+
+def applyLUT(img, lut):#
+    """
+    Conceptually:
+
+    result = img.copy()
+
+    for x in range(img.shape[0]):
+        for y in range(img.shape[1]):
+            for intensity in range(img.shape[2]):
+                result[x,y,intensity] = lut[img[x,y,intensity]]
+
+    But faster:
+    """
+    
+    return lut[img].astype(np.uint8)
 
 
-
-# Task 1
-# function to stretch an image
-def stretchHistogram(img):
-    img_float = img.astype(np.float32)
-    if img.ndim == 2:
-        stretched = cv2.normalize(img_float, None, 0, 255, cv2.NORM_MINMAX)
-        return stretched.astype(np.uint8)
-
-    channels = cv2.split(img_float)
-    stretched_channels = [cv2.normalize(ch, None, 0, 255, cv2.NORM_MINMAX) for ch in channels]
-    return cv2.merge(stretched_channels).astype(np.uint8)
-
-# Task 2
-# function to equalize an image
 def equalizeHistogram(img):
-    if img.ndim == 2:
-        return cv2.equalizeHist(img)
+    result = img.copy()
+    return result, lut
 
-    ycrcb = cv2.cvtColor(img, cv2.COLOR_BGR2YCrCb)
-    ycrcb[:, :, 0] = cv2.equalizeHist(ycrcb[:, :, 0])
-    return cv2.cvtColor(ycrcb, cv2.COLOR_YCrCb2BGR)
-
-#Hilfsfunktion
-# function to apply a look-up table onto an image
-def applyLUT(img, LUT):
-    lut = np.asarray(LUT, dtype=np.uint8)
-    if lut.size != 256:
-        raise ValueError("LUT must contain 256 entries")
-    return cv2.LUT(img, lut)
-
-# Hilfsfunktion
-# function to find the minimum an maximum in a histogram
 def findMinMaxPos(histogram):
     histogram = np.asarray(histogram).flatten()
     non_zero_indices = np.nonzero(histogram)[0]
@@ -44,8 +37,23 @@ def findMinMaxPos(histogram):
         return 0, 0
     return int(non_zero_indices[0]), int(non_zero_indices[-1])
 
-# Hilfsfunktion
-# function to create a vector containing the histogram
+def stretchHistogram(img):
+    result = img.copy()
+
+    histogram = calculateHistogram(img, L)
+
+    #0 = ax_min + n and 256 = ax_max + n
+    solution = np.array([0, L])
+    x_min, x_max = findMinMaxPos(histogram)
+    equation = np.array([[x_min, 1], [x_max, 1]])
+    x = np.linalg.solve(equation, solution)
+
+    lut = np.clip(Utilities.create_identity_lut()*x[0] + x[1], a_min=0, a_max=255).astype(np.uint8)
+
+    result = applyLUT(result, lut)
+
+    return result, lut
+
 def calculateHistogram(img, nrBins):
     # create histogram vector
     gray = Utilities.ensure_one_channel_grayscale_image(img)
@@ -53,29 +61,39 @@ def calculateHistogram(img, nrBins):
     return histogram
 
 def apply_log(img):
-    img_float = img.astype(np.float32)
-    max_val = img_float.max()
-    if max_val == 0:
-        return np.zeros_like(img)
+    lut = Utilities.create_identity_lut()
 
-    c = 255.0 / np.log1p(max_val)
-    result = c * np.log1p(img_float)
-    return np.clip(result, 0, 255).astype(np.uint8)
+
+    return applyLUT(img, lut), lut
 
 def apply_exp(img):
-    img_norm = img.astype(np.float32) / 255.0
-    exp_img = np.expm1(img_norm)
-    max_val = exp_img.max()
-    if max_val == 0:
-        return np.zeros_like(img)
+    lut = Utilities.create_identity_lut()
 
-    result = (exp_img / max_val) * 255.0
-    return np.clip(result, 0, 255).astype(np.uint8)
+
+    return applyLUT(img, lut), lut
 
 def apply_inverse(img):
     return 255 - img
 
 def apply_threshold(img, threshold):
-    gray = Utilities.ensure_one_channel_grayscale_image(img)
-    _, binary = cv2.threshold(gray, threshold, 255, cv2.THRESH_BINARY)
-    return cv2.cvtColor(binary, cv2.COLOR_GRAY2BGR)
+    lut = Utilities.create_identity_lut()
+
+    return applyLUT(img, lut), lut
+
+
+def apply_contrast_sigmoid(img, factor):
+    lut =  np.linspace(0, 1, 256)
+
+    lut = np.clip(lut, 0, 255).astype(np.uint8)
+    return applyLUT(img, lut), lut
+
+def apply_contrast(img, factor):
+    lut = Utilities.create_identity_lut()
+
+    return applyLUT(img, lut), lut
+
+
+def apply_exposure(img, ev):
+    lut = Utilities.create_identity_lut()
+
+    return applyLUT(img, lut), lut

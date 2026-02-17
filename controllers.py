@@ -23,9 +23,7 @@ class MainController():
         # Set the log level to INFO
         self.logger.setLevel(logging.INFO)
 
-    def test_function(self):
-        print("Test function")
-        pass
+
 
     def loadImage(self, str):
         img = cv2.imread(str, 1)
@@ -34,7 +32,7 @@ class MainController():
         self.logger.info('Image loaded: '+str)
 
     def saveImage(self, str):
-        cv2.imwrite(str, self._model.image)
+        cv2.imwrite(str, cv2.cvtColor(self._model.image, cv2.COLOR_RGB2BGR))
         self.logger.info('Image written to: '+str)
 
 
@@ -94,22 +92,35 @@ class MainController():
     #####################################
 
     def stretch_image(self):
-        self._model.image = HM.stretchHistogram(self._model.input_image)
+        self._model.image, self._model.lut = HM.stretchHistogram(self._model.input_image)
 
     def equalize_image(self):
-        self._model.image = HM.equalizeHistogram(self._model.input_image)
+        self._model.image,self._model.lut = HM.equalizeHistogram(self._model.input_image)
 
     def apply_log(self):
-        self._model.image = HM.apply_log(self._model.input_image)
+        self._model.image,self._model.lut = HM.apply_log(self._model.input_image)
+        #self.logger.info('Logarithmus auf Bild angewendet.')
 
     def apply_exp(self):
-        self._model.image = HM.apply_exp(self._model.input_image)
-
+        self._model.image,self._model.lut = HM.apply_exp(self._model.input_image)
+        #self.logger.info('Exponentialfunktion auf Bild angewendet.')
     def apply_inv(self):
-        self._model.image = HM.apply_inverse(self._model.input_image)
+        self._model.image,self._model.lut = HM.apply_inverse(self._model.input_image)
+        #self.logger.info('Grauwerte invertiert.')
 
     def apply_threshold(self, threshold):
-        self._model.image = HM.apply_threshold(self._model.input_image, threshold)
+        self._model.image,self._model.lut = HM.apply_threshold(self._model.input_image, threshold)
+        #self.logger.info(f'Schwellwert {threshold} auf Bild angewendet.')
+    def apply_contrast_sigmoid(self, factor):
+        self._model.image,self._model.lut = HM.apply_contrast_sigmoid(self._model.input_image, factor)
+        #self.logger.info(f'Kontrastanpassung S-Kurve mit Faktor {factor} auf Bild angewendet.')
+    def apply_contrast(self, factor):
+        self._model.image,self._model.lut = HM.apply_contrast(self._model.input_image, factor)
+        #self.logger.info(f'Lineare Kontrastanpassung mit Faktor {factor} auf Bild angewendet.')
+
+    def apply_exposure(self, factor):
+        self._model.image,self._model.lut = HM.apply_exposure(self._model.input_image, factor)
+        #self.logger.info(f'Belichtung um Faktor {factor} erhöht.')
 
     #####################################
     # Übung 3

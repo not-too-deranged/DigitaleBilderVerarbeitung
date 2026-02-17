@@ -10,6 +10,7 @@ class ImageModel(QObject):
 
     _image = None          #output image
     _input_image = None    #input image (backup)
+    _lut = Utilities.create_identity_lut()            #aktuelle Kontrastanpassung auf das Bild als LUT
 
     def __init__(self):
         super().__init__()
@@ -23,10 +24,13 @@ class ImageModel(QObject):
     def input_image(self):
         return self._input_image
 
+    @property
+    def lut(self):
+        return self._lut
+
     @image.setter
     def image(self, img):
         self._image = img.copy()
-        print("M: image changed!")
         # update in model is reflected in view by sending a signal to view
         self.image_changed.emit(img)
 
@@ -36,10 +40,18 @@ class ImageModel(QObject):
         self.image = img
         self.input_image_changed.emit(img)
 
+    @lut.setter
+    def lut(self, lut):
+        self._lut = lut
+
+
+
     def initialize(self):
         image = np.zeros((256, 256, 3), np.uint8)
         image[:, 0:256//2] = (255, 0, 0)
         image[:, 256//2:256] = (0, 0, 255)
+        _lut = Utilities.create_identity_lut()
+
         self.input_image = image
 
     class ColorAnalysis:
@@ -53,9 +65,6 @@ class ImageModel(QObject):
             self.CLUSTERS = clusters
             self.IMAGE = Utilities.resize_image(img, 100)
             cv2.imshow("Input", self.IMAGE)
-
-
-
 
     def load_rgb_image(self, path):
         image = cv2.imread(path, 1)
