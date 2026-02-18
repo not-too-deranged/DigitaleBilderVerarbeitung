@@ -72,6 +72,9 @@ def calculateHistogram(img, nrBins):
 def apply_log(img):
     lut = Utilities.create_identity_lut()
 
+    a = (L-1)/np.log(L)
+    lut = np.clip(a*np.log(lut+1), a_min=0, a_max=L-1).astype(np.uint8)
+
 
     return applyLUT(img, lut), lut
 
@@ -109,18 +112,19 @@ def apply_contrast_sigmoid(img, factor):
     denominator = 2*(4*factor * np.abs(lut-0.5) - factor - 1)
     lut = (L-1) * (numerator/denominator + 0.5)
 
-    lut = np.clip(lut, 0, 255).astype(np.uint8)
+    lut = np.clip(lut, 0, L-1).astype(np.uint8)
     return applyLUT(img, lut), lut
 
 def apply_contrast(img, factor):
     lut = Utilities.create_identity_lut()
     p = lut.size/2
-    lut = np.clip((lut-p)*factor+p, 0 , 255).astype(np.uint8)
+    lut = np.clip((lut-p)*factor+p, 0 , L-1).astype(np.uint8)
 
     return applyLUT(img, lut), lut
 
 
 def apply_exposure(img, ev):
     lut = Utilities.create_identity_lut()
+    lut = np.clip(lut*(2**ev), a_min=0, a_max=L-1).astype(np.uint8)
 
     return applyLUT(img, lut), lut
