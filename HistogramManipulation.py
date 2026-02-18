@@ -28,6 +28,16 @@ def applyLUT(img, lut):#
 
 def equalizeHistogram(img):
     result = img.copy()
+    gray = Utilities.ensure_one_channel_grayscale_image(result)
+    histogram = calculateHistogram(gray, L)
+
+    lut = (np.round(((L-1)/gray.size)*(np.cumsum(histogram)))).astype(np.uint8)
+    result = applyLUT(gray, lut)
+    #For comparison:
+    #comp = cv2.equalizeHist(gray)
+    #print(np.allclose(comp, result))
+    result = Utilities.ensure_three_channel_grayscale_image(result)
+
     return result, lut
 
 def findMinMaxPos(histogram):
@@ -39,7 +49,6 @@ def findMinMaxPos(histogram):
 
 def stretchHistogram(img):
     result = img.copy()
-
     histogram = calculateHistogram(img, L)
 
     #0 = ax_min + n and 256 = ax_max + n
@@ -48,7 +57,7 @@ def stretchHistogram(img):
     equation = np.array([[x_min, 1], [x_max, 1]])
     x = np.linalg.solve(equation, solution)
 
-    lut = np.clip(Utilities.create_identity_lut()*x[0] + x[1], a_min=0, a_max=255).astype(np.uint8)
+    lut = np.clip(Utilities.create_identity_lut()*x[0] + x[1], a_min=0, a_max=L-1).astype(np.uint8)
 
     result = applyLUT(result, lut)
 
