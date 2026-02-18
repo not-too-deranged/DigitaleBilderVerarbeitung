@@ -82,7 +82,12 @@ def apply_exp(img):
     return applyLUT(img, lut), lut
 
 def apply_inverse(img):
-    return 255 - img
+    #works too but doesnt produce a lut:
+    #comp = (L-1)-img
+    lut = np.invert(Utilities.create_identity_lut().astype(np.uint8))
+    result = applyLUT(img, lut)
+
+    return result, lut
 
 def apply_threshold(img, threshold):
     lut = Utilities.create_identity_lut()
