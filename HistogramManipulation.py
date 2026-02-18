@@ -98,7 +98,7 @@ def apply_contrast_sigmoid(img, factor):
 
 def apply_contrast(img, factor):
     lut = Utilities.create_identity_lut()
-
+    lut = np.clip(lut*factor, 0 , 255).astype(np.uint8)
     return applyLUT(img, lut), lut
 
 
