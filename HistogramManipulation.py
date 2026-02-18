@@ -91,6 +91,8 @@ def apply_inverse(img):
 
 def apply_threshold(img, threshold):
     lut = Utilities.create_identity_lut()
+    lut[threshold:] = 255
+    lut[:threshold] = 0
 
     return applyLUT(img, lut), lut
 
