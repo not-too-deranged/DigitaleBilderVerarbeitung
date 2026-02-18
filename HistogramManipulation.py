@@ -78,6 +78,11 @@ def apply_log(img):
 def apply_exp(img):
     lut = Utilities.create_identity_lut()
 
+    y = 0.01
+    a = (L-1)/(np.exp(y*(L-1))-1)
+
+    lut = a*(np.exp(y*lut)-1)
+
 
     return applyLUT(img, lut), lut
 
@@ -98,14 +103,20 @@ def apply_threshold(img, threshold):
 
 
 def apply_contrast_sigmoid(img, factor):
-    lut =  np.linspace(0, 1, 256)
+    lut = np.linspace(0, 1, 256)
+
+    numerator = (factor-1)*(2*lut-1)
+    denominator = 2*(4*factor * np.abs(lut-0.5) - factor - 1)
+    lut = (L-1) * (numerator/denominator + 0.5)
 
     lut = np.clip(lut, 0, 255).astype(np.uint8)
     return applyLUT(img, lut), lut
 
 def apply_contrast(img, factor):
     lut = Utilities.create_identity_lut()
-    lut = np.clip(lut*factor, 0 , 255).astype(np.uint8)
+    p = lut.size/2
+    lut = np.clip((lut-p)*factor+p, 0 , 255).astype(np.uint8)
+
     return applyLUT(img, lut), lut
 
 
