@@ -48,8 +48,8 @@ def findMinMaxPos(histogram):
     return int(non_zero_indices[0]), int(non_zero_indices[-1])
 
 def stretchHistogram(img):
-    result = img.copy()
-    histogram = calculateHistogram(img, L)
+    gray = Utilities.ensure_one_channel_grayscale_image(img)
+    histogram = calculateHistogram(gray, L)
 
     #0 = ax_min + n and 256 = ax_max + n
     solution = np.array([0, L])
@@ -59,7 +59,8 @@ def stretchHistogram(img):
 
     lut = np.clip(Utilities.create_identity_lut()*x[0] + x[1], a_min=0, a_max=L-1).astype(np.uint8)
 
-    result = applyLUT(result, lut)
+    result = applyLUT(gray, lut)
+    result = Utilities.ensure_three_channel_grayscale_image(result)
 
     return result, lut
 
