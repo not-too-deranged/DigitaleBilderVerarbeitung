@@ -94,12 +94,3 @@ def visualize_lut(lut):
         vis_img[y_plot, x] = [255, 0, 0]
 
     return vis_img
-
-def pad_img(img, kSize, pad_mode="edge"):
-    half_kSize = kSize // 2
-    #if one channel grayscale
-    if len(img.shape) == 2:
-        padded = np.pad(img, ((half_kSize,), (half_kSize,)), mode=pad_mode)
-    else:
-        padded = np.pad(img, ((half_kSize,), (half_kSize,), (0,)), mode=pad_mode)
-    return padded

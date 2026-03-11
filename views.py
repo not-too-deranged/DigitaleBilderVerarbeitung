@@ -101,6 +101,8 @@ class MainView(QMainWindow):
         self._ui.pushButton_filter_sobelY.clicked.connect(self.on_filter_sobelY_button_clicked)
         self._ui.pushButton_filter_gauss.clicked.connect(self.on_filter_gauss_button_clicked)
         self._ui.pushButton_filter_movAvg.clicked.connect(self.on_filter_moving_avg_button_clicked)
+        self._ui.pushButton_filter_movAvg_conv.clicked.connect(self.on_filter_moving_avg_conv_clicked)
+        self._ui.pushButton_filter_movAvg_sep.clicked.connect(self.on_filter_moving_avg_sep_kernel_clicked)
         self._ui.pushButton_filter_movAvg_int.clicked.connect(self.on_filter_moving_avg_integral_button_clicked)
         self._ui.pushButton_filter_median.clicked.connect(self.on_filter_median_button_clicked)
         self._ui.pushButton_filter_evaluation.clicked.connect(self.on_runtime_evaluation_button_clicked)
@@ -331,6 +333,14 @@ class MainView(QMainWindow):
 
     def on_filter_moving_avg_button_clicked(self):
         self._main_controller.apply_moving_avg_filter(self._ui.spinBox_filter_avg_size.value())
+        self.on_image_changed()
+
+    def on_filter_moving_avg_conv_clicked(self):
+        self._main_controller.apply_moving_avg_conv(self._ui.spinBox_filter_avg_size.value())
+        self.on_image_changed()
+
+    def on_filter_moving_avg_sep_kernel_clicked(self):
+        self._main_controller.apply_moving_average_filter_seperated_kernel(self._ui.spinBox_filter_avg_size.value())
         self.on_image_changed()
 
     def on_filter_moving_avg_integral_button_clicked(self):

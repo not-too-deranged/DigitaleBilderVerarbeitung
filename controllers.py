@@ -136,6 +136,13 @@ class MainController():
         img = IF.applyKernelInSpatialDomain(self._model.input_image, kernel)
         self._model.image = Utilities.ensure_three_channel_grayscale_image(img)
 
+    def apply_moving_avg_conv(self, kernel_size):
+        self.apply_moving_avg_filter(kernel_size)
+
+    def apply_moving_average_filter_seperated_kernel(self, kernel_size):
+        img = IF.applyMovingAverageFilterWithSeperatedKernels(self._model.input_image, kernel_size)
+        self._model.image = Utilities.ensure_three_channel_grayscale_image(img)
+
     def apply_moving_avg_filter_integral(self, kernel_size):
         img = IF.applyMovingAverageFilterWithIntegralImage(self._model.input_image, kernel_size)
         self._model.image = Utilities.ensure_three_channel_grayscale_image(img)
@@ -143,8 +150,6 @@ class MainController():
     def apply_median_filter(self, kernel_size):
         img = IF.applyMedianFilter(self._model.input_image, kernel_size)
         self._model.image = Utilities.ensure_three_channel_grayscale_image(img)
-
-
 
     def apply_filter_sobelX(self):
         kernel = IF.createSobelXKernel()
